@@ -1,0 +1,165 @@
+#player {
+    background-color: rgb(190, 190, 190);
+    height: 670px;
+    width: 400px;
+    margin: auto;
+    border-radius: 8px;
+    box-shadow: 10px 10px 10px rgb(175, 175, 175) inset;
+    overflow: hidden;
+}
+
+#search_bar_div {
+    width: 400px;
+    height: 40px;
+    padding-top: 20px;
+}
+
+#search_form {
+    height: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+#search_button {
+    height: 40px;
+    border: none;
+    margin: 0;
+    padding: 0;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+#search_button:hover {
+    cursor: pointer;
+    background-color: rgb(184, 184, 184);
+}
+
+#search_bar {
+    width: 257px;
+    height: 40px;
+    border: none;
+    margin: 0;
+    padding: 0;
+    padding-left: 3px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+#search_image {
+    width: 40px;
+    float: left;
+}
+
+#sync_visualiser_container {
+    width: 400px;
+    height: 40px;
+    margin: 0 auto;
+    padding: 0;
+    text-align: center;
+}
+
+#image_div {
+    height: 300px;
+    width: 300px;
+    padding: 20px;
+    position: relative;
+    margin: auto;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+#image_container {
+    height: 300px;
+    width: 300px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#image {
+    height: 100%;
+    width: 100%;
+}
+
+#info {
+    text-align: center;
+}
+
+#interact {
+    list-style-type: none;
+    width: 400px;
+    height: 40px;
+    padding: 0;
+    margin: 0;
+}
+
+#back_container {
+    width: 80px;
+    text-align: center;
+}
+
+#back_button {
+    width: 40px;
+}
+
+#back_button:hover {
+    filter: opacity(0.5);
+    cursor: pointer;
+}
+
+#progress_bar {
+    height: 20px;
+    width: 240px;
+    background-color: rgb(165, 165, 165);
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+#progress {
+    height: 20px;
+}
+
+#bar {
+    height: 20px;
+    width: 40px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 5px;
+}
+
+#next_container {
+    width: 80px;
+    text-align: center;
+}
+
+#next_button {
+    width: 40px;
+}
+
+#next_button:hover {
+    filter: opacity(0.5);
+    cursor: pointer;
+}
+
+.interact_buttons {
+    float: left;
+}
+
+#StartPause_container {
+    text-align: center;
+    width: 400px;
+    height: 40px;
+}
+
+#StartPause_image {
+    width: 50px;
+}
+
+#StartPause_image:hover {
+    filter: opacity(0.5);
+    cursor: pointer;
+}
+
+#track_length {
+    font-size: 14px;
+    color: #555;
+    margin-top: 5px;
+}

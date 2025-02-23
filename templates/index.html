@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IAMMUSIC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="player">
+        <div id="search_bar_div">
+            <form id="search_form">
+                <input id="search_bar" type="text" placeholder="What would you like to play?">
+                <button id="search_button" type="button">
+                    <img id="search_image" src="{{ url_for('static', filename='images/search.png') }}" alt="Search">
+                </button>
+            </form>
+        </div>
+        <div id="sync_visualiser_container">
+            <canvas id="visualiser" width="300" height="40"></canvas>
+        </div>
+        <div id="image_div">
+            <div id="image_container">
+                <img id="image" src="{{ url_for('static', filename='images/iammusic.jpg') }}">
+            </div>
+        </div>
+        <div id="info">
+            <p id="song">I AM MUSIC</p>
+            <p id="artist">GLORIOUS KING</p>
+            <p id="track_length">Length: 0:00</p>
+        </div>
+        <div>
+            <ul id="interact">
+                <li id="back_container" class="interact_buttons">
+                    <img id="back_button" src="{{ url_for('static', filename='images/rewind.png') }}" alt="Back">
+                </li>
+                <li id="progress_bar" class="interact_buttons">
+                    <div id="bar">
+                        <div id="progress"></div>
+                    </div>
+                </li>
+                <li id="next_container" class="interact_buttons">
+                    <img id="next_button" src="{{ url_for('static', filename='images/skip.png') }}" alt="Next">
+                </li>
+            </ul>
+        </div>
+        <div id="StartPause_container">
+            <img id="StartPause_image" src="{{ url_for('static', filename='images/play.png') }}" alt="Play/Pause">
+        </div>
+    </div>
+
+    <!-- Link to the external JavaScript file -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

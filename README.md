@@ -1,0 +1,1 @@
+Put spotify API credentials in the .env yes please

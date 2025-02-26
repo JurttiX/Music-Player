@@ -1,134 +1,83 @@
 let isPlaying = false;
-let currentTrackUri = null;
-let audioContext;
-let analyser;
-let source;
-let dataArray;
-let bufferLength;
 
-// Add event listener to the search button
-document.getElementById('search_button').addEventListener('click', async () => {
-    const query = document.getElementById('search_bar').value;
-    if (!query) {
-        alert('Please enter a search query.');
-        return;
-    }
-
-    try {
-        // Send the search query to the backend
-        const response = await fetch(`/search/${query}`);
-        const text = await response.text();  // Get the response as text
-        console.log('Response text:', text);  // Log the response text
-
-        const data = JSON.parse(text);  // Parse the response as JSON
-
-        if (data.error) {
-            alert(data.error);
-            return;
-        }
-
-        // Update the UI with the track details
-        document.getElementById('song').textContent = data.track_name;
-        document.getElementById('artist').textContent = data.artist;
-        document.getElementById('image').src = data.image_url;
-        document.getElementById('track_length').textContent = `Length: ${formatTime(data.track_length)}`;
-
-        // Store the track URI
-        currentTrackUri = data.track_uri;
-    } catch (error) {
-        console.error('Error fetching track data:', error);
-        alert('An error occurred while fetching track data.');
-    }
-});
-
-// Helper function to format track length (seconds to mm:ss)
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-}
-
-// Play/Pause button functionality
-const startPauseButton = document.getElementById('StartPause_image');
-
-startPauseButton.addEventListener('click', () => {
-    isPlaying = !isPlaying; // Toggle play/pause state
-    startPauseButton.src = isPlaying ? 'static/images/pause.png' : 'static/images/play.png';
-
-    // Call the backend to play/pause the track
-    controlPlayback(isPlaying, currentTrackUri);
-});
-
-// Function to control playback (play/pause)
-async function controlPlayback(play, trackUri) {
-    try {
-        const response = await fetch('/control_playback', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ play: play, track_uri: trackUri }),
-        });
+// Fetch the access token from the backend
+async function getAccessToken() {
+    const response = await fetch('/get_token');
+    if (response.status === 401) {
+        // Handle redirect to Spotify auth page
         const data = await response.json();
-
-        if (data.error) {
-            alert(`Error: ${data.error}`);
-            console.error(`Error: ${data.error}`);
-            return;
+        if (data.auth_url) {
+            window.location.href = data.auth_url;  // Redirect to Spotify auth page
+        } else {
+            throw new Error('Unable to fetch access token: No auth URL provided');
         }
+    } else if (response.ok) {
+        const data = await response.json();
+        return data.access_token;
+    } else {
+        throw new Error('Unable to fetch access token');
+    }
+}
 
-        console.log('Playback control successful:', data);
+// Initialize the Web Playback SDK
+async function initializePlayer() {
+    try {
+        const token = await getAccessToken();
+        const player = new Spotify.Player({
+            name: 'IAMMUSIC Player',
+            getOAuthToken: cb => { cb(token); },
+            volume: 0.5
+        });
 
-        if (play) {
-            // Initialize the audio context and analyser
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                analyser.fftSize = 256;
-                bufferLength = analyser.frequencyBinCount;
-                dataArray = new Uint8Array(bufferLength);
+        // Event listeners
+        player.addListener('ready', ({ device_id }) => {
+            console.log('Ready with Device ID', device_id);
+        });
 
-                // Connect the audio context to the audio source
-                const audioElement = new Audio();
-                audioElement.src = `https://open.spotify.com/track/${trackUri.split(':').pop()}`;
-                audioElement.crossOrigin = "anonymous";
-                source = audioContext.createMediaElementSource(audioElement);
-                source.connect(analyser);
-                analyser.connect(audioContext.destination);
+        player.addListener('not_ready', ({ device_id }) => {
+            console.log('Device ID has gone offline', device_id);
+        });
 
-                audioElement.play();
-                drawVisualizer();
+        player.addListener('initialization_error', ({ message }) => {
+            console.error('Initialization Error:', message);
+        });
+
+        player.addListener('authentication_error', ({ message }) => {
+            console.error('Authentication Error:', message);
+        });
+
+        player.addListener('account_error', ({ message }) => {
+            console.error('Account Error:', message);
+        });
+
+        // Connect to the player
+        player.connect().then(success => {
+            if (success) {
+                console.log('Connected to Spotify!');
             }
-        }
+        });
+
+        // Play/Pause button functionality
+        const startPauseButton = document.getElementById('StartPause_image');
+        startPauseButton.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            startPauseButton.src = isPlaying ? 'static/images/pause.png' : 'static/images/play.png';
+
+            fetch('/control_playback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ play: isPlaying })
+            }).then(response => response.json())
+              .then(data => console.log(data))
+              .catch(error => console.error('Error:', error));
+        });
     } catch (error) {
-        console.error('Error controlling playback:', error);
-        alert('An error occurred while controlling playback.');
+        console.error('Error initializing player:', error);
     }
 }
 
-// Music Sync Visualizer
-const visualiser = document.getElementById('visualiser');
-const canvasCtx = visualiser.getContext('2d');
-
-function drawVisualizer() {
-    requestAnimationFrame(drawVisualizer);
-    analyser.getByteFrequencyData(dataArray);
-
-    canvasCtx.fillStyle = 'rgb(190, 190, 190)';
-    canvasCtx.fillRect(0, 0, visualiser.width, visualiser.height);
-
-    const barWidth = (visualiser.width / bufferLength) * 2.5;
-    let barHeight;
-    let x = 0;
-
-    for (let i = 0; i < bufferLength; i++) {
-        barHeight = dataArray[i];
-        canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
-        canvasCtx.fillRect(x, visualiser.height - barHeight / 2, barWidth, barHeight / 2);
-        x += barWidth + 1;
-    }
-}
-
-// Initialize visualizer
-visualiser.width = 300;
-visualiser.height = 40;
+// Initialize the player when the SDK is ready
+window.onSpotifyWebPlaybackSDKReady = () => {
+    console.log('Spotify Web Playback SDK is ready!');
+    initializePlayer();
+};
